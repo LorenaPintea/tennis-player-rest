@@ -1,7 +1,6 @@
 package springrest.tennisplayerrest;
 
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
 
@@ -12,8 +11,11 @@ import java.util.Optional;
 
 @Service
 public class PlayerService {
-    @Autowired
-    private PlayerRepository playerRepository;
+    private final PlayerRepository playerRepository;
+
+    public PlayerService(PlayerRepository playerRepository) {
+        this.playerRepository = playerRepository;
+    }
 
     //Get all players
     public List<Player> getAllPlayers() {
@@ -26,7 +28,7 @@ public class PlayerService {
             Optional<Player> player = playerRepository.findById(id);
             return player.orElseThrow();
         } catch (Exception e) {
-            throw new RuntimeException("Player with id " + id + " not found!");
+            throw new PlayerNotFoundException("Player with id " + id + " not found!");
         }
     }
 
@@ -37,7 +39,7 @@ public class PlayerService {
 
     //Update a player
     public Player updatePlayer(int id, Player player) {
-        //get player by ID
+        //get player by ID and update their attributes
         try {
             Player updatePlayer = playerRepository.findById(id).orElseThrow();
             updatePlayer.setName(player.getName());
@@ -46,7 +48,7 @@ public class PlayerService {
             updatePlayer.setTitles(player.getTitles());
             return playerRepository.save(updatePlayer);
         } catch (Exception e) {
-            throw new RuntimeException("Player with id " + id + " couldn't be updated!");
+            throw new PlayerNotFoundException("Player with id " + id + " couldn't be updated!");
         }
     }
     //Partially update a player
@@ -64,7 +66,7 @@ public class PlayerService {
 
             return playerRepository.save(player);
         } catch (Exception e) {
-            throw new RuntimeException("Player with id " + id + " couldn't be updated!");
+            throw new PlayerNotFoundException("Player with id " + id + " couldn't be updated!");
         }
     }
 
@@ -81,7 +83,7 @@ public class PlayerService {
             playerRepository.deleteById(id);
             return "Player with id " + id + " deleted";
         } catch (Exception e) {
-            return "Player with id " + id + " couldn't be deleted";
+            throw new PlayerNotFoundException("Player with id " + id + " couldn't be deleted!");
         }
     }
 }
